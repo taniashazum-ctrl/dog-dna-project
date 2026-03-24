@@ -72,4 +72,45 @@ def rank_breeds(database: List[SeqRecord], mystery: SeqRecord) -> List[Tuple[str
     print(f"\nBest match (pairwise): {best[0]} ({best[2]:.2f}%)")
 
     return results
+    
+    def write_combined(database: List[SeqRecord], mystery: SeqRecord, output: str = "combined.fa") -> str:
+    """
+    Combine database and mystery sequences into a single FASTA file.
+
+    Required for multiple sequence alignment.
+
+    Args:
+        database: Known sequences
+        mystery: Unknown sequence
+        output: Output FASTA file name
+
+    Returns:
+        str: Path to combined FASTA file
+    """
+    SeqIO.write(database + [mystery], output, "fasta")
+    return output
+    
+    def run_muscle(input_file: str, output_file: str = "aligned.fa") -> Optional[str]:
+    """
+    Run MUSCLE to perform multiple sequence alignment.
+
+    Args:
+        input_file: Combined FASTA file
+        output_file: Output aligned file
+
+    Returns:
+        str or None: Path to aligned file, or None if MUSCLE fails
+    """
+    try:
+        subprocess.run([
+            "muscle", "-align", input_file, "-output", output_file
+        ], check=True)
+        print("Alignment complete.")
+        return output_file
+
+    except Exception as e:
+        print("[WARN] MUSCLE not available:", e)
+        return None
+
+
 
