@@ -90,27 +90,25 @@ def rank_breeds(database: List[SeqRecord], mystery: SeqRecord) -> List[Tuple[str
     SeqIO.write(database + [mystery], output, "fasta")
     return output
     
-    def run_muscle(input_file: str, output_file: str = "aligned.fa") -> Optional[str]:
+    def run_mafft(input_file: str, output_file: str = "aligned.fa"):
     """
-    Run MUSCLE to perform multiple sequence alignment.
-
-    Args:
-        input_file: Combined FASTA file
-        output_file: Output aligned file
-
-    Returns:
-        str or None: Path to aligned file, or None if MUSCLE fails
+    Run MAFFT multiple sequence alignment.
     """
+    if not shutil.which("mafft"):
+        raise RuntimeError("MAFFT is not installed or not in PATH")
+
     try:
-        subprocess.run([
-            "muscle", "-align", input_file, "-output", output_file
-        ], check=True)
-        print("Alignment complete.")
+        with open(output_file, "w") as output_handle:
+            subprocess.run(
+                ["mafft", "--auto", input_file],
+                stdout=output_handle,
+                stderr=subprocess.DEVNULL,
+                check=True
+            )
+
+        print(f"\nAlignment complete: {output_file}")
         return output_file
 
-    except Exception as e:
-        print("[WARN] MUSCLE not available:", e)
+    except subprocess.CalledProcessError as e:
+        print("MAFFT failed:", e)
         return None
-
-
-
