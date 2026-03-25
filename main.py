@@ -118,7 +118,9 @@ def run_mafft(input_file: str, output_file: str = "aligned.fa"):
     except subprocess.CalledProcessError as e:
         print("MAFFT failed:", e)
         return None
-def build_tree(aligned_file: str):
+
+    return tree
+def build_tree(aligned_file: str, output_tree="tree.nwk"):
     alignment = AlignIO.read(aligned_file, "fasta")
 
     calculator = DistanceCalculator("identity")
@@ -130,4 +132,33 @@ def build_tree(aligned_file: str):
     print("\nPhylogenetic Tree:")
     Phylo.draw_ascii(tree)
 
+    # Save tree in Newick format
+    Phylo.write(tree, output_tree, "newick")
+    print(f"\nTree saved to: {output_tree}")
+
     return tree
+
+def main():
+    """
+    Main pipeline execution.
+    """
+    database_file = "dog_breeds.fa"
+    mystery_file = "mystery.fa"
+
+    database, mystery = load_sequences(database_file, mystery_file)
+
+    rank_breeds(database, mystery)
+
+    combined_file = write_combined(database, mystery)
+
+    aligned_file = run_mafft(combined_file)
+
+    if aligned_file:
+        build_tree(aligned_file)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
