@@ -1,4 +1,10 @@
 Dog DNA Project
+from Bio import SeqIO, AlignIO, Phylo
+from Bio.Align import PairwiseAligner
+from Bio.Phylo.TreeConstruction import DistanceCalculator, DistanceTreeConstructor
+from typing import List, Tuple
+import subprocess
+import shutil
 
 # LOAD SEQUENCES
 
@@ -73,7 +79,7 @@ def rank_breeds(database: List[SeqRecord], mystery: SeqRecord) -> List[Tuple[str
 
     return results
     
-    def write_combined(database: List[SeqRecord], mystery: SeqRecord, output: str = "combined.fa") -> str:
+def write_combined(database: List[SeqRecord], mystery: SeqRecord, output: str = "combined.fa") -> str:
     """
     Combine database and mystery sequences into a single FASTA file.
 
@@ -90,7 +96,7 @@ def rank_breeds(database: List[SeqRecord], mystery: SeqRecord) -> List[Tuple[str
     SeqIO.write(database + [mystery], output, "fasta")
     return output
     
-    def run_mafft(input_file: str, output_file: str = "aligned.fa"):
+def run_mafft(input_file: str, output_file: str = "aligned.fa"):
     """
     Run MAFFT multiple sequence alignment.
     """
@@ -112,3 +118,16 @@ def rank_breeds(database: List[SeqRecord], mystery: SeqRecord) -> List[Tuple[str
     except subprocess.CalledProcessError as e:
         print("MAFFT failed:", e)
         return None
+def build_tree(aligned_file: str):
+    alignment = AlignIO.read(aligned_file, "fasta")
+
+    calculator = DistanceCalculator("identity")
+    distance_matrix = calculator.get_distance(alignment)
+
+    constructor = DistanceTreeConstructor()
+    tree = constructor.nj(distance_matrix)
+
+    print("\nPhylogenetic Tree:")
+    Phylo.draw_ascii(tree)
+
+    return tree
